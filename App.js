@@ -2,43 +2,59 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
-  Text,
   View,
   FlatList,
-  TouchableOpacity,
+  Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
+import Header from "./components/header";
+import TodoItem from "./components/todoItem";
+import AddTodo from "./components/addTodo";
 
 export default function App() {
-  const [people, setPeople] = useState([
-    { name: "shawn", id: 1 },
-    { name: "steve", id: 2 },
-    { name: "khris", id: 3 },
-    { name: "diya", id: 4 },
-    { name: "makayla", id: 5 },
-    { name: "amandla", id: 6 },
-    { name: "shawn", id: 7 },
+  const [todos, setTodos] = useState([
+    { text: "buy coffee", key: "1" },
+    { text: "create an app", key: "2" },
+    { text: "play on the switch", key: "3" },
   ]);
 
-  const pressHandler = (id) => {
-    console.log(id);
-    setPeople((prev) => {
-      return prev.filter((person) => person.id !== id);
+  const pressHandler = (key) => {
+    setTodos((prevTodos) => {
+      return prevTodos.filter((todo) => todo.key != key);
     });
   };
 
+  const submitHandler = (text) => {
+    if (text.length > 3) {
+      setText("");
+      setTodos((prevTodos) => {
+        return [{ text, key: Math.random().toString() }, ...prevTodos];
+      });
+    } else {
+      Alert.alert("OOPS", "Todo must be over 3 characters long", [
+        { text: "Understood", onPress: () => console.log("alert closed") },
+      ]);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <FlatList
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        data={people}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => pressHandler(item.id)}>
-            <Text style={styles.item}>{item?.name}</Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <Header />
+        <View style={styles.content}>
+          <AddTodo submitHandler={submitHandler} />
+          <View style={styles.list}>
+            <FlatList
+              data={todos}
+              renderItem={({ item }) => (
+                <TodoItem item={item} pressHandler={pressHandler} />
+              )}
+            />
+          </View>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -46,21 +62,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
-    // justifyContent: "center",
   },
-  boldText: {
-    fontWeight: "bold",
-    color: "gray",
+  content: {
+    padding: 40,
   },
-  item: {
-    width: 150,
-    borderColor: "#777",
-    backgroundColor: "blue",
-    color: "#fff",
-    padding: 50,
-    paddingHorizontal: 10,
-    margin: 10,
-    fontSize: 18,
+  list: {
+    marginTop: 20,
   },
 });
